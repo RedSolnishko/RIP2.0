@@ -1,0 +1,35 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #2F3D5C; /* Example background color */
+}
+
+.header-home {
+  margin-right: auto;
+  margin-left: 10%;
+  width: 52px; /* Example size */
+  height: 52px; /* Example size */
+}
+
+.header-home:hover{
+  color: aqua;
+}
+
+.profile-icon {
+  margin-right: 5px;
+  width: 52px; /* Example size */
+  height: 52px; /* Example size */
+}
+
+.header-manager-link {
+  font-size: 30px;
+  color: #ffffff;
+  font-family: 'Courier New', Courier, monospace;
+  text-decoration: none;
+}
+
+.header-manager-link:hover {
+  color: aqua;
+}

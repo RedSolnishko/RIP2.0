@@ -1,0 +1,83 @@
+.manager-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+}
+
+table {
+  flex: 1;
+  overflow-y: auto; /* Позволяет таблице прокручиваться, если она слишком большая */
+}
+
+h1 {
+  text-align: center;
+  color: aqua;
+}
+
+p {
+  text-align: center;
+  color: #ffffff;
+}
+  
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+    width: 50%;
+  }
+  
+  input {
+    width: 100%; 
+    max-width: 400px; 
+    margin-bottom: 10px;
+    padding: 10px;
+  }
+  
+  button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    padding: 10px;
+    width: 200px;
+    border: 1px solid #ddd;
+    text-align: center;
+    color: white;
+  }
+
+  td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+    color: white;
+    box-sizing: border-box;
+    white-space: nowrap; /* Запрещает перенос строк */
+    overflow: hidden; /* Скрывает текст, который не помещается */
+    text-overflow: ellipsis; /* Добавляет многоточие в конце обрезанного текста */
+    max-width: 200px;
+  }
+  
+  th {
+    background-color: #734b4b;
+  }
+
+  body {
+    background-color: #161625; /* Замените #f0f0f0 на желаемый цвет */
+  }
