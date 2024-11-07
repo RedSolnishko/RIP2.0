@@ -3,7 +3,6 @@ import { register, login } from '../api/auth';
 import { useNavigate } from 'react-router-dom'; 
 import './style/AuthPage.css';
 
-
 const slides = [
   "Штирлицу попала в голову пуля. 'Разрывная,' - раскинул мозгами Штирлиц.",
   "Штирлиц всю ночь топил камин. На утро камин утонул.",
@@ -12,7 +11,7 @@ const slides = [
 
 function AuthPage({ setIsAuthenticated }) {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [authMode, setAuthMode] = useState(''); // Initially no mode is selected
+  const [authMode, setAuthMode] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,6 +34,12 @@ function AuthPage({ setIsAuthenticated }) {
       if (password !== confirmPassword) {
         return 'Пароли не совпадают.';
       }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return 'Некорректный формат email.';
+      }
+      if (password.length < 8) {
+        return 'Пароль должен содержать не менее 8 символов.';
+      }
     } else if (authMode === 'login') {
       if (!username || !password) {
         return 'Имя пользователя и пароль должны быть заполнены.';
@@ -42,6 +47,9 @@ function AuthPage({ setIsAuthenticated }) {
     } else if (authMode === 'forgotPassword') {
       if (!email) {
         return 'Email должен быть заполнен.';
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return 'Некорректный формат email.';
       }
     }
     return '';
@@ -57,10 +65,14 @@ function AuthPage({ setIsAuthenticated }) {
       console.log('Attempting to register...');
       await register(username, email, password);
       setIsAuthenticated(true);
-
-      navigate('/profile'); // Перенаправление на страницу профиля
+      navigate('/profile');
     } catch (error) {
-
+      if (!error.response) {
+        setError('Ошибка сети. Пожалуйста, проверьте подключение к интернету.');
+      } else {
+        console.error('Registration error:', error);
+        setError('Ошибка регистрации. Пожалуйста, попробуйте позже.');
+      }
     }
   };
 
@@ -74,10 +86,15 @@ function AuthPage({ setIsAuthenticated }) {
       console.log('Attempting to login...');
       await login(username, password);
       const token = localStorage.getItem('jwtToken');
-      console.log('Stored token after login:', token); // Выводим токен в консоль
+      console.log('Stored token after login:', token);
       setIsAuthenticated(true);
     } catch (error) {
-      console.error('Login error:', error);
+      if (!error.response) {
+        setError('Ошибка сети. Пожалуйста, проверьте подключение к интернету.');
+      } else {
+        console.error('Login error:', error);
+        setError('Ошибка входа. Пожалуйста, попробуйте позже.');
+      }
     }
   };
 
@@ -87,6 +104,7 @@ function AuthPage({ setIsAuthenticated }) {
       setError(errorMessage);
       return;
     }
+    // Implement forgot password logic here
   };
 
   const renderAuthForm = () => {
@@ -115,14 +133,14 @@ function AuthPage({ setIsAuthenticated }) {
             {backButton}
           </>
         );
-        case 'forgotPassword':
-          return (
-            <>
-              <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-              <button onClick={handleForgotPassword} className="small-forgot-password-button">Востановить пароль</button>
-              {backButton}
-            </>
-          );
+      case 'forgotPassword':
+        return (
+          <>
+            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <button onClick={handleForgotPassword} className="small-forgot-password-button">Востановить пароль</button>
+            {backButton}
+          </>
+        );
       default:
         return null;
     }

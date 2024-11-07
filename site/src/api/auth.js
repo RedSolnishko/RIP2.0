@@ -5,56 +5,56 @@ const API_URL = 'http://26.177.53.250';
 
 export const register = async (username, email, password) => {
   try {
-    console.log('Sending registration request...');
     const response = await axios.post(`${API_URL}/api/register`, {
       username,
       email,
       password,
     });
-    console.log('Registration request sent successfully');
-    const { token } = response.data;
+    const { token, expiresIn } = response.data;
+    const expirationTime = new Date().getTime() + expiresIn * 1000; // expiresIn в секундах
     localStorage.setItem('jwtToken', token);
+    localStorage.setItem('tokenExpiration', expirationTime);
     return response.data;
   } catch (error) {
-    console.error('Registration error:', error);
     throw error;
   }
 };
 
 export const login = async (username, password) => {
   try {
-    console.log('Sending login request...');
     const response = await axios.post(`${API_URL}/api/login`, {
       username,
       password,
     });
-    console.log('Login request sent successfully');
-    const { token } = response.data;
+    const { token, expiresIn } = response.data;
+    const expirationTime = new Date().getTime() + expiresIn * 1000;
     localStorage.setItem('jwtToken', token);
+    localStorage.setItem('tokenExpiration', expirationTime);
     return response.data;
   } catch (error) {
-    console.error('Login error:', error);
-    if (error.response && error.response.status === 401) {
-      throw new Error('Неверное имя пользователя или пароль.');
-    } else {
-      throw new Error('Ошибка при авторизации. Попробуйте снова.');
-    }
+    throw error;
   }
 };
 
-export const getUserData = async () => {
-  try {
-    const token = localStorage.getItem('jwtToken'); // Получаем токен из localStorage
-    console.log('Retrieved token:', token); // Выводим токен в консоль для проверки
+export const isTokenExpired = () => {
+  const expirationTime = localStorage.getItem('tokenExpiration');
+  return new Date().getTime() > expirationTime;
+};
 
+// Пример использования в getUserData
+export const getUserData = async () => {
+  if (isTokenExpired()) {
+    throw new Error('Токен истек. Пожалуйста, войдите снова.');
+  }
+  try {
+    const token = localStorage.getItem('jwtToken');
     const response = await axios.get(`${API_URL}/api/user_info`, {
       headers: {
-        Authorization: `Bearer ${token}` // Передаем токен в заголовке запроса
+        Authorization: `Bearer ${token}`
       }
     });
-    return response.data; // Возвращаем данные пользователя
+    return response.data;
   } catch (error) {
-    console.error('Error fetching user data:', error);
     throw new Error('Не удалось получить данные пользователя.');
   }
 };
