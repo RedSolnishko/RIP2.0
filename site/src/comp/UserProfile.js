@@ -1,28 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import './style/UserProfile.css';
-import avatar from './assets/user.png';
+// import avatar from './assets/user.png';
 import { updateUserData, getUserData } from '../api/auth'; // Импорт функции для получения данных пользователя
+import axios from 'axios';
 
+const API_URL = 'http://26.177.53.250';
 // Основной компонент профиля пользователя
 function UserProfile({ setIsAuthenticated }) {
   const [isEditing, setIsEditing] = useState(false);
   const [username, setUsername] = useState('');
   const [userEmail, setUserEmail] = useState('');
-  const [userAvatar, setUserAvatar] = useState(avatar);
+  const [userAvatar, setUserAvatar] = useState('');
   const [password, setPassword] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const userData = await getUserData();
+        console.log('User data:', userData); // Лог для проверки данных
         setUsername(userData.username);
         setUserEmail(userData.email);
-        setUserAvatar(userData.avatar || avatar);
+        setUserAvatar(userData.avatar || userData.defaultAvatar);
+        console.log('Avatar URL:', userData.avatar || userData.defaultAvatar);
       } catch (error) {
         console.error('Ошибка при получении данных пользователя:', error.message);
       }
     };
-
+  
     fetchUserData();
   }, []);
 
@@ -34,14 +38,23 @@ function UserProfile({ setIsAuthenticated }) {
   const handleSaveChanges = async (e) => {
     e.preventDefault();
     try {
-      const userData = {
-        username,
-        email: userEmail,
-        password,
-        avatar: userAvatar,
-      };
+      const formData = new FormData();
+      formData.append('username', username);
+      formData.append('email', userEmail);
+      formData.append('password', password);
   
-      const response = await updateUserData(userData);
+      // Добавляем файл аватарки в FormData
+      const fileInput = document.querySelector('input[type="file"]');
+      if (fileInput.files[0]) {
+        formData.append('avatar', fileInput.files[0]);
+      }
+  
+      const response = await axios.put(`${API_URL}/api/profile`, formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('jwtToken')}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
   
       if (response) {
         console.log('Данные пользователя успешно обновлены.');
@@ -69,7 +82,7 @@ function UserProfile({ setIsAuthenticated }) {
     <div className="user-profile">
       <div className="profile-section">
         <div className="profile-info">
-          <img src={userAvatar} alt="User Avatar" className="avatar" />
+        <img src={userAvatar} alt="User Avatar" className="avatar" />
           <div className="user-details">
             {isEditing ? (
               <form onSubmit={handleSaveChanges}>
