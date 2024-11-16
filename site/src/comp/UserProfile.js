@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './style/UserProfile.css';
-import { getUserData, isTokenExpired } from '../api/auth'; // Импорт функции для проверки истечения токена
+import { getUserData, isTokenExpired } from '../api/auth';
 import axios from 'axios';
 
 const API_URL = 'http://26.177.53.250';
@@ -20,11 +20,9 @@ function UserProfile({ setIsAuthenticated }) {
       }
       try {
         const userData = await getUserData();
-        console.log('User data:', userData);
         setUsername(userData.username);
         setUserEmail(userData.email);
         setUserAvatar(userData.avatar || userData.defaultAvatar);
-        console.log('Avatar URL:', userData.avatar || userData.defaultAvatar);
       } catch (error) {
         console.error('Ошибка при получении данных пользователя:', error.message);
       }
@@ -81,6 +79,25 @@ function UserProfile({ setIsAuthenticated }) {
     }
   };
 
+  const handleDeleteProfile = async () => {
+    try {
+      const response = await axios.delete(`${API_URL}/api/delete_user`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('jwtToken')}`,
+        },
+      });
+  
+      if (response.status === 200) {
+        console.log('Профиль пользователя успешно удален.');
+        handleLogout();
+      } else {
+        console.error('Ошибка при удалении профиля пользователя.');
+      }
+    } catch (error) {
+      console.error('Ошибка при удалении профиля пользователя:', error.message);
+    }
+  };
+
   return (
     <div className="user-profile">
       <div className="profile-section">
@@ -123,12 +140,10 @@ function UserProfile({ setIsAuthenticated }) {
           {!isEditing && <button onClick={() => setIsEditing(true)}>Изменить данные</button>}
         </div>
         <button onClick={handleLogout}>Выйти</button>
+        <button onClick={handleDeleteProfile}>Удалить Профиль</button>
       </div>
     </div>
   );
-
-  
-
 }
 
 export default UserProfile;

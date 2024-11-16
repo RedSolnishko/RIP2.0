@@ -7,6 +7,7 @@ import HomePage from './comp/HomePage';
 import UserProfile from './comp/UserProfile';
 import Footer from './comp/Footer';
 import ManagerPage from './comp/ManagerPage';
+import { SocketProvider } from './context/SocketContext';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -19,6 +20,7 @@ function App() {
   }, []);
 
   return (
+    <SocketProvider>
     <Router>
       <div className="App">
         <Header isAuthenticated={isAuthenticated} />
@@ -33,6 +35,7 @@ function App() {
         <Footer />
       </div>
     </Router>
+    </SocketProvider>
   );
 }
 

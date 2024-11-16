@@ -11,7 +11,7 @@ export const register = async (username, email, password) => {
       password,
     });
     const { token, expiresIn } = response.data;
-    const expirationTime = new Date().getTime() + expiresIn * 1000; // expiresIn в секундах
+    const expirationTime = new Date().getTime() + expiresIn * 1000; 
     localStorage.setItem('jwtToken', token);
     localStorage.setItem('tokenExpiration', expirationTime);
     return response.data;
@@ -41,7 +41,6 @@ export const isTokenExpired = () => {
   return new Date().getTime() > expirationTime;
 };
 
-// Пример использования в getUserData
 export const getUserData = async () => {
   if (isTokenExpired()) {
     throw new Error('Токен истек. Пожалуйста, войдите снова.');
