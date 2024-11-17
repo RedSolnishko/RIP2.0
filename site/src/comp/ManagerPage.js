@@ -17,14 +17,17 @@ function ManagerPage() {
       navigate('/auth');
       return;
     }
-  
+
     if (socket) {
-      socket.emit('get_password_entries');
-  
+      const token = localStorage.getItem('jwtToken'); // Retrieve the token
+
+      // Emit the event with the token
+      socket.emit('get_password_entries', { token });
+
       socket.on('password_entries_response', (data) => {
         setEntries(data.entries || []);
       });
-  
+
       socket.on('create_password_response', (response) => {
         if (response.success) {
           console.log('Пароль успешно добавлен:', response.message);
@@ -32,7 +35,7 @@ function ManagerPage() {
           console.error('Ошибка при добавлении пароля:', response.message);
         }
       });
-  
+
       socket.on('update_password_response', (response) => {
         if (response.success) {
           console.log('Пароль успешно обновлен:', response.message);
@@ -40,7 +43,7 @@ function ManagerPage() {
           console.error('Ошибка при обновлении пароля:', response.message);
         }
       });
-  
+
       return () => {
         socket.off('password_entries_response');
         socket.off('create_password_response');
@@ -66,11 +69,13 @@ function ManagerPage() {
   };
 
   const handleUpdateEntry = (entryId, newSiteName, newUrl, newPassword) => {
+    const token = localStorage.getItem('jwtToken');
     const updatedEntry = {
       entry_id: entryId,
       new_site_name: newSiteName,
       new_url: newUrl,
       new_encrypted_password: newPassword,
+      token
     };
     socket.emit('update_password', updatedEntry);
   };

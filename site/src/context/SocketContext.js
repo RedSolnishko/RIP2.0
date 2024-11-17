@@ -11,7 +11,10 @@ export const SocketProvider = ({ children }) => {
   const socketRef = useRef();
 
   useEffect(() => {
-    socketRef.current = io('http://26.177.53.250/socket.io/');
+    socketRef.current = io('http://26.177.53.250/socket.io/',{
+      transports: ['websocket'],
+    }
+    );
 
     socketRef.current.on('connect', () => {
       console.log('Успешно подключено к серверу');
