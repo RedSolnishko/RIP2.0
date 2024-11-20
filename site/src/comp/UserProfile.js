@@ -139,8 +139,8 @@ function UserProfile({ setIsAuthenticated }) {
         <div className="profile-settings">
           {!isEditing && <button onClick={() => setIsEditing(true)}>Изменить данные</button>}
         </div>
-        <button onClick={handleLogout}>Выйти</button>
         <button onClick={handleDeleteProfile}>Удалить Профиль</button>
+        <button onClick={handleLogout}>Выйти</button>
       </div>
     </div>
   );

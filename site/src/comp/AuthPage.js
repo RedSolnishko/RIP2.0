@@ -157,7 +157,6 @@ function AuthPage({ setIsAuthenticated }) {
             <>
               <button className="login-button" onClick={() => setAuthMode('login')}>Войти</button>
               <button className="register-button" onClick={() => setAuthMode('register')}>Зарегистрироваться</button>
-              <button className="forgot-password-button" onClick={() => setAuthMode('forgotPassword')}>Востановить пароль</button>
             </>
           )}
         </div>

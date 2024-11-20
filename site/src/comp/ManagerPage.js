@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext';
 import { isTokenExpired } from '../api/auth';
+import EditModal from './EditModal';
 import './style/ManagerPage.css';
 
 function ManagerPage() {
@@ -9,6 +10,8 @@ function ManagerPage() {
   const [websiteName, setWebsiteName] = useState('');
   const [websiteURL, setWebsiteURL] = useState('');
   const [password, setPassword] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState(null);
   const navigate = useNavigate();
   const socket = useSocket();
 
@@ -17,49 +20,63 @@ function ManagerPage() {
       navigate('/auth');
       return;
     }
-
+  
     if (socket) {
-      const token = localStorage.getItem('jwtToken'); // Retrieve the token
-
-      // Emit the event with the token
+      const token = localStorage.getItem('jwtToken');
+  
       socket.emit('get_password_entries', { token });
-
+  
       socket.on('password_entries_response', (data) => {
         setEntries(data.entries || []);
       });
-
+  
       socket.on('create_password_response', (response) => {
         if (response.success) {
-          console.log('Пароль успешно добавлен:', response.message);
+          console.log('Запись успешно добавлен:', response.message);
         } else {
-          console.error('Ошибка при добавлении пароля:', response.message);
+          console.error('Ошибка при добавлении записи:', response.message);
         }
       });
-
+  
       socket.on('update_password_response', (response) => {
         if (response.success) {
-          console.log('Пароль успешно обновлен:', response.message);
+          console.log('Запись успешно обновленна:', response.message);
+          setEntries((prevEntries) => 
+            prevEntries.map(entry => 
+              entry.id === response.entry_id ? { ...entry, resource_name: response.new_site_name, url: response.new_url, encrypted_password: response.new_encrypted_password } : entry
+            )
+          );
         } else {
-          console.error('Ошибка при обновлении пароля:', response.message);
+          console.error('Ошибка при обновлении записи:', response.message);
         }
       });
-
+  
+      socket.on('delete_password_response', (response) => {
+        if (response.success) {
+          console.log('Запись успешно удалена:', response.message);
+          setEntries((prevEntries) => prevEntries.filter(entry => entry.id !== response.entry_id));
+        } else {
+          console.error('Ошибка при удалении записи:', response.message);
+        }
+      });
+  
       return () => {
         socket.off('password_entries_response');
         socket.off('create_password_response');
         socket.off('update_password_response');
+        socket.off('delete_password_response');
       };
     }
   }, [navigate, socket]);
 
   const handleAddEntry = (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('jwtToken'); // Retrieve the token
+    const token = localStorage.getItem('jwtToken');
     const newEntry = { 
       site_name: websiteName, 
       url: websiteURL, 
       password,
-      token // Include the token in the emitted data
+      token
     };
     console.log('Отправка запроса на создание пароля:', newEntry);
     socket.emit('create_password', newEntry);
@@ -78,6 +95,20 @@ function ManagerPage() {
       token
     };
     socket.emit('update_password', updatedEntry);
+  };
+
+  const handleDeleteEntry = (entryId) => {
+    const token = localStorage.getItem('jwtToken');
+    const entryToDelete = {
+      entry_id: entryId,
+      token
+    };
+    socket.emit('delete_password', entryToDelete);
+  };
+
+  const openEditModal = (entry) => {
+    setSelectedEntry(entry);
+    setIsModalOpen(true);
   };
 
   return (
@@ -116,6 +147,7 @@ function ManagerPage() {
             <th>Название сайта</th>
             <th>Ссылка на сайт</th>
             <th>Пароль</th>
+            <th>Изменить</th>
           </tr>
         </thead>
         <tbody>
@@ -125,7 +157,7 @@ function ManagerPage() {
               <td><a href={entry.url} target="_blank" rel="noopener noreferrer">{entry.url}</a></td>
               <td>{entry.encrypted_password}</td>
               <td>
-                <button onClick={() => handleUpdateEntry(entry.id, 'New Site Name', 'New URL', 'New Password')}>
+                <button onClick={() => openEditModal(entry)}>
                   Изменить
                 </button>
               </td>
@@ -133,6 +165,16 @@ function ManagerPage() {
           ))}
         </tbody>
       </table>
+
+      {selectedEntry && (
+        <EditModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          entry={selectedEntry}
+          onSave={handleUpdateEntry}
+          onDelete={handleDeleteEntry}
+        />
+      )}
     </div>
   );
 }
