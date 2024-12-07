@@ -20,51 +20,27 @@ function ManagerPage() {
       navigate('/auth');
       return;
     }
-  
+
     if (socket) {
       const token = localStorage.getItem('jwtToken');
-  
-      socket.emit('get_password_entries', { token });
-  
-      socket.on('password_entries_response', (data) => {
+      
+      const fetchEntries = () => {
+        socket.emit('get_password_entries', { token, include_passwords: true });
+      };
+
+      fetchEntries(); // Initial fetch
+
+      const intervalId = setInterval(fetchEntries, 1000); // Fetch every second
+
+      const handlePasswordEntriesResponse = (data) => {
         setEntries(data.entries || []);
-      });
-  
-      socket.on('create_password_response', (response) => {
-        if (response.success) {
-          console.log('Запись успешно добавлен:', response.message);
-        } else {
-          console.error('Ошибка при добавлении записи:', response.message);
-        }
-      });
-  
-      socket.on('update_password_response', (response) => {
-        if (response.success) {
-          console.log('Запись успешно обновленна:', response.message);
-          setEntries((prevEntries) => 
-            prevEntries.map(entry => 
-              entry.id === response.entry_id ? { ...entry, resource_name: response.new_site_name, url: response.new_url, encrypted_password: response.new_encrypted_password } : entry
-            )
-          );
-        } else {
-          console.error('Ошибка при обновлении записи:', response.message);
-        }
-      });
-  
-      socket.on('delete_password_response', (response) => {
-        if (response.success) {
-          console.log('Запись успешно удалена:', response.message);
-          setEntries((prevEntries) => prevEntries.filter(entry => entry.id !== response.entry_id));
-        } else {
-          console.error('Ошибка при удалении записи:', response.message);
-        }
-      });
-  
+      };
+
+      socket.on('password_entries_response', handlePasswordEntriesResponse);
+
       return () => {
-        socket.off('password_entries_response');
-        socket.off('create_password_response');
-        socket.off('update_password_response');
-        socket.off('delete_password_response');
+        clearInterval(intervalId);
+        socket.off('password_entries_response', handlePasswordEntriesResponse);
       };
     }
   }, [navigate, socket]);
@@ -72,13 +48,12 @@ function ManagerPage() {
   const handleAddEntry = (e) => {
     e.preventDefault();
     const token = localStorage.getItem('jwtToken');
-    const newEntry = { 
-      site_name: websiteName, 
-      url: websiteURL, 
+    const newEntry = {
+      site_name: websiteName,
+      url: websiteURL,
       password,
-      token
+      token,
     };
-    console.log('Отправка запроса на создание пароля:', newEntry);
     socket.emit('create_password', newEntry);
     setWebsiteName('');
     setWebsiteURL('');
@@ -92,7 +67,7 @@ function ManagerPage() {
       new_site_name: newSiteName,
       new_url: newUrl,
       new_encrypted_password: newPassword,
-      token
+      token,
     };
     socket.emit('update_password', updatedEntry);
   };
@@ -101,7 +76,7 @@ function ManagerPage() {
     const token = localStorage.getItem('jwtToken');
     const entryToDelete = {
       entry_id: entryId,
-      token
+      token,
     };
     socket.emit('delete_password', entryToDelete);
   };
@@ -114,8 +89,6 @@ function ManagerPage() {
   return (
     <div className='manager-page'>
       <h1>Менеджер</h1>
-      <p>ТекстТекстТекст</p>
-      
       <form onSubmit={handleAddEntry}>
         <input
           type="text"
@@ -154,12 +127,14 @@ function ManagerPage() {
           {entries.map((entry, index) => (
             <tr key={index}>
               <td>{entry.resource_name}</td>
-              <td><a href={entry.url} target="_blank" rel="noopener noreferrer">{entry.url}</a></td>
-              <td>{entry.encrypted_password}</td>
               <td>
-                <button onClick={() => openEditModal(entry)}>
-                  Изменить
-                </button>
+                <a href={entry.url} target="_blank" rel="noopener noreferrer">
+                  {entry.url}
+                </a>
+              </td>
+              <td>{entry.password}</td>
+              <td>
+                <button onClick={() => openEditModal(entry)}>Изменить</button>
               </td>
             </tr>
           ))}

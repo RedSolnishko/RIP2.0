@@ -2,9 +2,9 @@ import React from 'react';
 import './style/EditModal.css';
 
 function EditModal({ isOpen, onClose, entry, onSave, onDelete }) {
-  const [newSiteName, setNewSiteName] = React.useState(entry.resource_name);
-  const [newUrl, setNewUrl] = React.useState(entry.url);
-  const [newPassword, setNewPassword] = React.useState(entry.encrypted_password);
+  const [newSiteName, setNewSiteName] = React.useState(entry.resource_name || '');
+  const [newUrl, setNewUrl] = React.useState(entry.url || '');
+  const [newPassword, setNewPassword] = React.useState(entry.encrypted_password || '');
 
   const handleSave = () => {
     onSave(entry.id, newSiteName, newUrl, newPassword);
@@ -42,7 +42,7 @@ function EditModal({ isOpen, onClose, entry, onSave, onDelete }) {
           placeholder="Пароль"
         />
         <button onClick={handleSave}>Сохранить</button>
-        <button className="button_edit_cancer" onClick={handleDelete}> Удалить запись</button>
+        <button className="button_edit_cancer" onClick={handleDelete}>Удалить запись</button>
       </div>
     </div>
   );

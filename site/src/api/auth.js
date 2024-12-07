@@ -68,7 +68,6 @@ export const updateUserData = async (userData) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error updating user data:', error);
     throw new Error('Не удалось обновить данные пользователя.');
   }
 };
